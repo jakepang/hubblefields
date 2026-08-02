@@ -14,15 +14,23 @@ export function middleware(request: NextRequest) {
   }
 
   const session = request.cookies.get("t5_session")?.value;
-  if (!session && (pathname === "/" || pathname.startsWith("/console"))) {
+  const needsAuth =
+    pathname === "/" || pathname.startsWith("/console") || pathname.startsWith("/platform");
+
+  if (!session && needsAuth) {
     const url = request.nextUrl.clone();
     url.pathname = "/signin";
+    if (pathname.startsWith("/console") || pathname.startsWith("/platform")) {
+      url.searchParams.set("next", pathname.startsWith("/platform") ? "/platform" : "/console");
+    }
     return NextResponse.redirect(url);
   }
 
   if (session && pathname === "/signin") {
+    const next = request.nextUrl.searchParams.get("next");
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = next === "/console" || next === "/platform" ? next : "/";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

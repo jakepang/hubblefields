@@ -195,7 +195,7 @@ export function SettingsPanel({
           {isPlatformAdmin && (
             <section className="settings-block">
               <h3>Hubble Fields</h3>
-              <Link className="settings-row" href="/console">
+              <Link className="settings-row" href="/platform">
                 <span className="settings-ico">▣</span>
                 <span>Platform Console</span>
                 <b>›</b>

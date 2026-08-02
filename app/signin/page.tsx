@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 export default function SignInPage() {
   const [step, setStep] = useState<"login" | "change">("login");
@@ -8,6 +8,12 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const nextPath = useMemo(() => {
+    if (typeof window === "undefined") return "/";
+    const value = new URLSearchParams(window.location.search).get("next");
+    return value === "/console" || value === "/platform" ? value : "/";
+  }, []);
 
   const verify = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,7 +33,7 @@ export default function SignInPage() {
         setSaving(false);
         return;
       }
-      window.location.replace("/");
+      window.location.replace(nextPath);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to sign in");
       setSaving(false);
@@ -56,7 +62,7 @@ export default function SignInPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to change password");
-      window.location.replace("/");
+      window.location.replace(nextPath);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to change password");
       setSaving(false);
