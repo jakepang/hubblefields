@@ -57,6 +57,7 @@ export default function ConsolePage() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [addingCompany, setAddingCompany] = useState(false);
 
   const selected = companies.find((row) => row.id === selectedId) || null;
 
@@ -109,6 +110,8 @@ export default function ConsolePage() {
         if (list[0]) {
           setSelectedId(list[0].id);
           await loadCompanyDetails(list[0].id);
+        } else {
+          setAddingCompany(true);
         }
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : "Unable to open console");
@@ -120,6 +123,7 @@ export default function ConsolePage() {
 
   async function selectCompany(id: number) {
     setSelectedId(id);
+    setAddingCompany(false);
     setError("");
     setInviteNotice(null);
     try {
@@ -151,6 +155,7 @@ export default function ConsolePage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create company");
       formEl.reset();
+      setAddingCompany(false);
       await loadCompanies();
       setSelectedId(data.company.id);
       await loadCompanyDetails(data.company.id);
@@ -288,25 +293,61 @@ export default function ConsolePage() {
         </section>
       )}
 
-      <div className="console-grid console-grid-3">
-        <section className="console-panel">
-          <div className="console-panel-head">
-            <h2>Companies</h2>
-            <span>{companies.length}</span>
-          </div>
+      <section className="console-panel console-companies-panel">
+        <div className="console-panel-head">
+          <h2>1. Choose company</h2>
+          <span>{companies.length} compan{companies.length === 1 ? "y" : "ies"}</span>
+        </div>
+        <p className="console-lead">
+          Tap a company below to manage its projects and customer admins. Use + to add another company.
+        </p>
 
-          <form className="console-form" onSubmit={addCompany}>
+        <div className="company-picker">
+          {companies.map((company) => (
+            <button
+              key={company.id}
+              type="button"
+              className={`company-chip ${selectedId === company.id ? "active" : ""}`}
+              onClick={() => void selectCompany(company.id)}
+            >
+              <strong>{company.name}</strong>
+              <small>
+                {company.code} · {company.projectCount} project{company.projectCount === 1 ? "" : "s"}
+              </small>
+              {selectedId === company.id && <em>Selected</em>}
+            </button>
+          ))}
+
+          <button
+            type="button"
+            className={`company-chip company-chip-add ${addingCompany ? "active" : ""}`}
+            onClick={() => {
+              setAddingCompany(true);
+              setSelectedId(null);
+              setProjects([]);
+              setAdmins([]);
+              setInviteNotice(null);
+            }}
+          >
+            <strong>+ Add company</strong>
+            <small>Create a new customer</small>
+          </button>
+        </div>
+
+        {addingCompany && (
+          <form className="console-form console-add-company" onSubmit={addCompany}>
+            <h3>New company</h3>
             <label>
               Company name
-              <input name="name" placeholder="QI SHENG CONSTRUCTION PTE. LTD." required />
+              <input name="name" placeholder="e.g. Another Construction Pte Ltd" required />
             </label>
             <label>
               Code (optional)
-              <input name="code" placeholder="QI-SHENG" />
+              <input name="code" placeholder="e.g. ACME" />
             </label>
             <label>
               Contact name
-              <input name="contactName" placeholder="Site manager" />
+              <input name="contactName" placeholder="Contact person" />
             </label>
             <label>
               Contact email
@@ -314,56 +355,55 @@ export default function ConsolePage() {
             </label>
             <label>
               Notes
-              <input name="notes" placeholder="Trial customer, multi-site" />
+              <input name="notes" placeholder="Trial / multi-site / etc." />
             </label>
-            <button className="primary-button" disabled={saving}>
-              {saving ? "Saving…" : "Add company"}
-            </button>
-          </form>
-
-          <div className="console-list">
-            {companies.map((company) => (
+            <div className="console-form-actions">
               <button
-                key={company.id}
                 type="button"
-                className={`console-company ${selectedId === company.id ? "active" : ""}`}
-                onClick={() => void selectCompany(company.id)}
+                className="ghost-button"
+                onClick={() => {
+                  setAddingCompany(false);
+                  if (companies[0]) void selectCompany(companies[0].id);
+                }}
               >
-                <strong>{company.name}</strong>
-                <small>
-                  {company.code} · {company.projectCount} project{company.projectCount === 1 ? "" : "s"} ·{" "}
-                  {company.status}
-                </small>
+                Cancel
               </button>
-            ))}
-            {!companies.length && <p className="console-empty">No companies yet. Add your first customer above.</p>}
-          </div>
-        </section>
+              <button className="primary-button" disabled={saving}>
+                {saving ? "Saving…" : "Save company"}
+              </button>
+            </div>
+          </form>
+        )}
+      </section>
 
-        <section className="console-panel">
-          <div className="console-panel-head">
-            <h2>Projects</h2>
-            <span>{selected ? selected.name : "Select a company"}</span>
+      {selected && !addingCompany ? (
+        <>
+          <div className="console-selected-banner">
+            Managing: <strong>{selected.name}</strong>
           </div>
+          <div className="console-grid">
+            <section className="console-panel">
+              <div className="console-panel-head">
+                <h2>2. Projects</h2>
+                <span>for this company</span>
+              </div>
 
-          {selected ? (
-            <>
               <form className="console-form" onSubmit={addProject}>
                 <label>
                   Project name
-                  <input name="name" placeholder="Changi Coast works" required />
+                  <input name="name" placeholder="e.g. Site A / Jurong works" required />
                 </label>
                 <label>
                   Code (optional)
-                  <input name="code" placeholder="CHANGI-01" />
+                  <input name="code" placeholder="e.g. SITE-A" />
                 </label>
                 <label>
                   Address / area
-                  <input name="address" placeholder="Singapore" />
+                  <input name="address" placeholder="e.g. Singapore" />
                 </label>
                 <label>
                   Notes
-                  <input name="notes" placeholder="Dispersed sites, Singapore geofence" />
+                  <input name="notes" placeholder="Optional notes" />
                 </label>
                 <button className="primary-button" disabled={saving}>
                   {saving ? "Saving…" : "Add project"}
@@ -381,30 +421,24 @@ export default function ConsolePage() {
                     {project.notes && <em>{project.notes}</em>}
                   </div>
                 ))}
-                {!projects.length && <p className="console-empty">No projects yet for this company.</p>}
+                {!projects.length && <p className="console-empty">No projects yet. Add one above.</p>}
               </div>
-            </>
-          ) : (
-            <p className="console-empty">Select a company to manage its projects.</p>
-          )}
-        </section>
+            </section>
 
-        <section className="console-panel">
-          <div className="console-panel-head">
-            <h2>Customer Admins</h2>
-            <span>{selected ? selected.name : "Select a company"}</span>
-          </div>
+            <section className="console-panel">
+              <div className="console-panel-head">
+                <h2>3. Customer Admins</h2>
+                <span>for this company</span>
+              </div>
 
-          {selected ? (
-            <>
               <form className="console-form" onSubmit={addAdmin}>
                 <label>
                   Admin name
-                  <input name="name" placeholder="Site Admin" required />
+                  <input name="name" placeholder="e.g. Owen" required />
                 </label>
                 <label>
                   Company email
-                  <input name="email" type="email" placeholder="admin@company.com" required />
+                  <input name="email" type="email" placeholder="e.g. owen@company.com" required />
                 </label>
                 <label>
                   Temporary password
@@ -420,7 +454,10 @@ export default function ConsolePage() {
                     </button>
                   </div>
                 </label>
-                <p className="console-hint">Creates a Project Admin for this company. They must change password on first login.</p>
+                <p className="console-hint">
+                  Creates a Project Admin for <strong>{selected.name}</strong>. They must change password on first
+                  login at hubblefields.com/signin.
+                </p>
                 <button className="primary-button" disabled={saving}>
                   {saving ? "Saving…" : "Create admin account"}
                 </button>
@@ -435,14 +472,16 @@ export default function ConsolePage() {
                     </small>
                   </div>
                 ))}
-                {!admins.length && <p className="console-empty">No customer admins yet for this company.</p>}
+                {!admins.length && <p className="console-empty">No admins yet. Create one above.</p>}
               </div>
-            </>
-          ) : (
-            <p className="console-empty">Select a company to create its admin accounts.</p>
-          )}
-        </section>
-      </div>
+            </section>
+          </div>
+        </>
+      ) : (
+        !addingCompany && (
+          <p className="console-empty console-empty-main">Select a company above, or tap + Add company.</p>
+        )
+      )}
     </main>
   );
 }

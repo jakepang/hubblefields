@@ -1656,8 +1656,92 @@ a { color: inherit; text-decoration: none; }
   font-size: 13px;
 }
 .console-error { max-width: 1100px; margin: 0 auto 12px; }
+.console-lead {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.console-companies-panel {
+  max-width: 1280px;
+  margin: 0 auto 16px;
+}
+.company-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.company-chip {
+  border: 1px solid var(--line);
+  background: #fbfcfe;
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  min-height: 88px;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.company-chip strong { font-size: 14px; color: var(--ink); }
+.company-chip small { color: var(--muted); font-size: 11px; }
+.company-chip em {
+  font-style: normal;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--blue);
+}
+.company-chip.active {
+  border-color: #7eb0de;
+  background: #eef5fb;
+  box-shadow: inset 0 0 0 1px #7eb0de55;
+}
+.company-chip-add {
+  border-style: dashed;
+  background: white;
+  color: var(--blue);
+}
+.company-chip-add strong { color: var(--blue); font-size: 16px; }
+.console-add-company {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.console-add-company h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.console-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ghost-button {
+  border: 1px solid #cbd8e3;
+  background: white;
+  border-radius: 10px;
+  min-height: 44px;
+  font-weight: 700;
+  color: #52677a;
+}
+.console-selected-banner {
+  max-width: 1280px;
+  margin: 0 auto 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #123f78;
+  color: white;
+  font-size: 13px;
+}
+.console-selected-banner strong { font-size: 14px; }
+.console-empty-main {
+  max-width: 1280px;
+  margin: 18px auto 0;
+  text-align: center;
+}
 .console-grid {
-  max-width: 1100px;
+  max-width: 1280px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
