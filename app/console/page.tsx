@@ -24,6 +24,26 @@ type Project = {
   notes: string | null;
 };
 
+type CompanyAdmin = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+};
+
+type InviteNotice = {
+  email: string;
+  temporaryPassword: string;
+};
+
+function generatePassword() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out = "Qs";
+  for (let i = 0; i < 10; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return `${out}1`;
+}
+
 export default function ConsolePage() {
   const [ready, setReady] = useState(false);
   const [allowed, setAllowed] = useState(false);
@@ -31,6 +51,10 @@ export default function ConsolePage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [admins, setAdmins] = useState<CompanyAdmin[]>([]);
+  const [adminPassword, setAdminPassword] = useState(() => generatePassword());
+  const [inviteNotice, setInviteNotice] = useState<InviteNotice | null>(null);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -51,6 +75,20 @@ export default function ConsolePage() {
     setProjects(data.projects || []);
   }, []);
 
+  const loadAdmins = useCallback(async (companyId: number) => {
+    const response = await fetch(`/api/console/users?companyId=${companyId}`, { credentials: "include" });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Unable to load admins");
+    setAdmins(data.users || []);
+  }, []);
+
+  const loadCompanyDetails = useCallback(
+    async (companyId: number) => {
+      await Promise.all([loadProjects(companyId), loadAdmins(companyId)]);
+    },
+    [loadAdmins, loadProjects],
+  );
+
   useEffect(() => {
     void (async () => {
       try {
@@ -70,7 +108,7 @@ export default function ConsolePage() {
         const list = await loadCompanies();
         if (list[0]) {
           setSelectedId(list[0].id);
-          await loadProjects(list[0].id);
+          await loadCompanyDetails(list[0].id);
         }
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : "Unable to open console");
@@ -78,15 +116,16 @@ export default function ConsolePage() {
         setReady(true);
       }
     })();
-  }, [loadCompanies, loadProjects]);
+  }, [loadCompanies, loadCompanyDetails]);
 
   async function selectCompany(id: number) {
     setSelectedId(id);
     setError("");
+    setInviteNotice(null);
     try {
-      await loadProjects(id);
+      await loadCompanyDetails(id);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to load projects");
+      setError(caught instanceof Error ? caught.message : "Unable to load company details");
     }
   }
 
@@ -111,12 +150,9 @@ export default function ConsolePage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create company");
       event.currentTarget.reset();
-      const list = await loadCompanies();
+      await loadCompanies();
       setSelectedId(data.company.id);
-      await loadProjects(data.company.id);
-      if (!list.find((row) => row.id === data.company.id)) {
-        setCompanies((prev) => [data.company, ...prev]);
-      }
+      await loadCompanyDetails(data.company.id);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to create company");
     } finally {
@@ -146,10 +182,46 @@ export default function ConsolePage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create project");
       event.currentTarget.reset();
-      await loadProjects(selectedId);
+      await loadCompanyDetails(selectedId);
       await loadCompanies();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to create project");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function addAdmin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedId) return;
+    const form = new FormData(event.currentTarget);
+    setSaving(true);
+    setError("");
+    setInviteNotice(null);
+    setCopied(false);
+    try {
+      const response = await fetch("/api/console/users", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          companyId: selectedId,
+          name: form.get("name"),
+          email: form.get("email"),
+          temporaryPassword: adminPassword,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to create admin");
+      event.currentTarget.reset();
+      setInviteNotice({
+        email: data.user.email,
+        temporaryPassword: data.temporaryPassword,
+      });
+      setAdminPassword(generatePassword());
+      await loadAdmins(selectedId);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to create admin");
     } finally {
       setSaving(false);
     }
@@ -191,7 +263,29 @@ export default function ConsolePage() {
 
       {error && <p className="form-error console-error">{error}</p>}
 
-      <div className="console-grid">
+      {inviteNotice && (
+        <section className="console-invite">
+          <div>
+            <strong>Customer admin created</strong>
+            <p>
+              Share privately with <b>{inviteNotice.email}</b>. They must change it on first login.
+            </p>
+            <code>{inviteNotice.temporaryPassword}</code>
+          </div>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
+              void navigator.clipboard.writeText(inviteNotice.temporaryPassword);
+              setCopied(true);
+            }}
+          >
+            {copied ? "Copied" : "Copy password"}
+          </button>
+        </section>
+      )}
+
+      <div className="console-grid console-grid-3">
         <section className="console-panel">
           <div className="console-panel-head">
             <h2>Companies</h2>
@@ -289,6 +383,60 @@ export default function ConsolePage() {
             </>
           ) : (
             <p className="console-empty">Select a company to manage its projects.</p>
+          )}
+        </section>
+
+        <section className="console-panel">
+          <div className="console-panel-head">
+            <h2>Customer Admins</h2>
+            <span>{selected ? selected.name : "Select a company"}</span>
+          </div>
+
+          {selected ? (
+            <>
+              <form className="console-form" onSubmit={addAdmin}>
+                <label>
+                  Admin name
+                  <input name="name" placeholder="Site Admin" required />
+                </label>
+                <label>
+                  Company email
+                  <input name="email" type="email" placeholder="admin@company.com" required />
+                </label>
+                <label>
+                  Temporary password
+                  <div className="console-password-row">
+                    <input
+                      value={adminPassword}
+                      onChange={(event) => setAdminPassword(event.target.value)}
+                      minLength={10}
+                      required
+                    />
+                    <button type="button" onClick={() => setAdminPassword(generatePassword())}>
+                      Generate
+                    </button>
+                  </div>
+                </label>
+                <p className="console-hint">Creates a Project Admin for this company. They must change password on first login.</p>
+                <button className="primary-button" disabled={saving}>
+                  {saving ? "Saving…" : "Create admin account"}
+                </button>
+              </form>
+
+              <div className="console-list">
+                {admins.map((admin) => (
+                  <div key={admin.id} className="console-project">
+                    <strong>{admin.name}</strong>
+                    <small>
+                      {admin.email} · {admin.role} · {admin.status}
+                    </small>
+                  </div>
+                ))}
+                {!admins.length && <p className="console-empty">No customer admins yet for this company.</p>}
+              </div>
+            </>
+          ) : (
+            <p className="console-empty">Select a company to create its admin accounts.</p>
           )}
         </section>
       </div>

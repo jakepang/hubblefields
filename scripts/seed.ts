@@ -124,6 +124,11 @@ async function main() {
       });
       console.log("Seeded default project Singapore Operations");
     }
+
+    await db
+      .update(schema.projectUsers)
+      .set({ companyId, projectCode: companyCode })
+      .where(eq(schema.projectUsers.id, adminId));
   }
 
   const seedManpower = process.env.SEED_MANPOWER !== "0" && process.env.SEED_MANPOWER !== "false";
