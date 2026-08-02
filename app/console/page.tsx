@@ -131,7 +131,8 @@ export default function ConsolePage() {
 
   async function addCompany(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
     setSaving(true);
     setError("");
     try {
@@ -149,7 +150,7 @@ export default function ConsolePage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create company");
-      event.currentTarget.reset();
+      formEl.reset();
       await loadCompanies();
       setSelectedId(data.company.id);
       await loadCompanyDetails(data.company.id);
@@ -163,7 +164,8 @@ export default function ConsolePage() {
   async function addProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedId) return;
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
     setSaving(true);
     setError("");
     try {
@@ -181,7 +183,7 @@ export default function ConsolePage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create project");
-      event.currentTarget.reset();
+      formEl.reset();
       await loadCompanyDetails(selectedId);
       await loadCompanies();
     } catch (caught) {
@@ -194,7 +196,8 @@ export default function ConsolePage() {
   async function addAdmin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedId) return;
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
     setSaving(true);
     setError("");
     setInviteNotice(null);
@@ -213,7 +216,7 @@ export default function ConsolePage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create admin");
-      event.currentTarget.reset();
+      formEl.reset();
       setInviteNotice({
         email: data.user.email,
         temporaryPassword: data.temporaryPassword,
