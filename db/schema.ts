@@ -12,6 +12,31 @@ export const projectUsers = sqliteTable("project_users", {
   mustChangePassword: integer("must_change_password", { mode: "boolean" }).notNull().default(true),
   credentialExpiresAt: integer("credential_expires_at", { mode: "timestamp_ms" }),
   activatedAt: integer("activated_at", { mode: "timestamp_ms" }),
+  platformAdmin: integer("platform_admin", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const companies = sqliteTable("companies", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  code: text("code").notNull().unique(),
+  status: text("status").notNull().default("Active"),
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const companyProjects = sqliteTable("company_projects", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  companyId: integer("company_id")
+    .notNull()
+    .references(() => companies.id),
+  name: text("name").notNull(),
+  code: text("code").notNull(),
+  status: text("status").notNull().default("Active"),
+  address: text("address"),
+  notes: text("notes"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
 

@@ -96,6 +96,31 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   await ensureColumn(client, "attendance_records", "location_verified", "INTEGER");
   await ensureColumn(client, "attendance_records", "location_label", "TEXT");
   await ensureColumn(client, "attendance_records", "distance_m", "REAL");
+  await ensureColumn(client, "project_users", "platform_admin", "INTEGER NOT NULL DEFAULT 0");
+
+  await client.executeMultiple(`
+CREATE TABLE IF NOT EXISTS companies (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  code TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'Active',
+  contact_name TEXT,
+  contact_email TEXT,
+  notes TEXT,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS company_projects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  company_id INTEGER NOT NULL REFERENCES companies(id),
+  name TEXT NOT NULL,
+  code TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'Active',
+  address TEXT,
+  notes TEXT,
+  created_at INTEGER NOT NULL
+);
+`);
 
   console.log(`Migrated database at ${url}`);
 }

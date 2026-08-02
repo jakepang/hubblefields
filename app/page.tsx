@@ -9,7 +9,7 @@ import { t } from "@/lib/i18n";
 import { submitPunchWithOffline } from "@/lib/offline/sync";
 import { loadPrefs, ORG_NAME, PROJECT_NAME, type AppLanguage } from "@/lib/prefs";
 
-type ProjectUser = { id: number; name: string; email: string; role: string };
+type ProjectUser = { id: number; name: string; email: string; role: string; platformAdmin?: boolean };
 type ManagedUser = { name: string; email: string; role: string; status: string };
 type Worker = {
   id: number;
@@ -630,6 +630,7 @@ export default function HomePage() {
               userRole={user.role}
               userEmail={user.email}
               isAdmin={isAdmin}
+              isPlatformAdmin={Boolean(user.platformAdmin)}
               onSignOut={() => void logout()}
               onOpenHistory={() => setView("history")}
               onOpenManpower={() => setView("manpower")}

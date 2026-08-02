@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   }
 
   const session = request.cookies.get("t5_session")?.value;
-  if (!session && pathname === "/") {
+  if (!session && (pathname === "/" || pathname.startsWith("/console"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/signin";
     return NextResponse.redirect(url);

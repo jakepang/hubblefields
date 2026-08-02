@@ -13,6 +13,7 @@ export type AuthUser = {
   email: string;
   role: string;
   status: string;
+  platformAdmin: boolean;
 };
 
 function shouldUseSecureCookie() {
@@ -91,6 +92,7 @@ async function userFromToken(token: string | undefined | null): Promise<AuthUser
       email: projectUsers.email,
       role: projectUsers.role,
       status: projectUsers.status,
+      platformAdmin: projectUsers.platformAdmin,
     })
     .from(projectSessions)
     .innerJoin(projectUsers, eq(projectSessions.userId, projectUsers.id))
@@ -104,6 +106,7 @@ async function userFromToken(token: string | undefined | null): Promise<AuthUser
     email: row.email,
     role: row.role,
     status: row.status,
+    platformAdmin: Boolean(row.platformAdmin),
   };
 }
 

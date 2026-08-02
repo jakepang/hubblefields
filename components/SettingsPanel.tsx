@@ -20,6 +20,7 @@ type Props = {
   userRole: string;
   userEmail?: string;
   isAdmin?: boolean;
+  isPlatformAdmin?: boolean;
   onSignOut: () => void;
   onClose?: () => void;
   onOpenHistory?: () => void;
@@ -67,6 +68,7 @@ export function SettingsPanel({
   userRole,
   userEmail,
   isAdmin,
+  isPlatformAdmin,
   onSignOut,
   onClose,
   onOpenHistory,
@@ -186,6 +188,17 @@ export function SettingsPanel({
                   <b>›</b>
                 </button>
               )}
+            </section>
+          )}
+
+          {isPlatformAdmin && (
+            <section className="settings-block">
+              <h3>Hubble Fields</h3>
+              <a className="settings-row" href="/console">
+                <span className="settings-ico">▣</span>
+                <span>Platform Console</span>
+                <b>›</b>
+              </a>
             </section>
           )}
 
