@@ -1,0 +1,7 @@
+archive
+data
+.env*.local
+.next
+node_modules
+*.sqlite
+*.sqlite-*
