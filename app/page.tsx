@@ -7,7 +7,7 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { formatHours, localDateString } from "@/lib/attendance";
 import { t } from "@/lib/i18n";
 import { submitPunchWithOffline } from "@/lib/offline/sync";
-import { loadPrefs, type AppLanguage } from "@/lib/prefs";
+import { loadPrefs, ORG_NAME, PROJECT_NAME, type AppLanguage } from "@/lib/prefs";
 
 type ProjectUser = { id: number; name: string; email: string; role: string };
 type ManagedUser = { name: string; email: string; role: string; status: string };
@@ -462,16 +462,16 @@ export default function HomePage() {
       <OfflineSyncBootstrap onSynced={() => void load()} />
       <aside className="rail">
         <button className="brand" onClick={() => setView("overview")}>
-          <img src="/cccc-obayashi-jv.png" alt="CCCC–OBAYASHI JV" />
+          <img src="/cccc-obayashi-jv.png" alt={ORG_NAME} />
           <span>
-            <strong>CCCC–OBAYASHI JV</strong>
-            <small>T5 Substructure</small>
+            <strong>{ORG_NAME}</strong>
+            <small>Attendance</small>
           </span>
         </button>
         <div className="project-badge">
-          <small>PROJECT</small>
-          <strong>T5 Substructure</strong>
-          <span>NSC · Contract T5</span>
+          <small>COMPANY</small>
+          <strong>{PROJECT_NAME}</strong>
+          <span>Singapore · Multi-site</span>
         </div>
         <nav>
           <button className={view === "overview" ? "active" : ""} onClick={() => setView("overview")}>
@@ -522,8 +522,8 @@ export default function HomePage() {
       <section className="workspace">
         <header className="topbar">
           <div className="fixed-project">
-            <small>ACTIVE PROJECT</small>
-            <strong>T5 Substructure</strong>
+            <small>COMPANY</small>
+            <strong>{PROJECT_NAME}</strong>
           </div>
         </header>
 
@@ -976,7 +976,7 @@ export default function HomePage() {
             <button type="button" className="modal-close" onClick={() => setAddingWorker(false)}>
               ×
             </button>
-            <p className="eyebrow">T5 MANPOWER</p>
+            <p className="eyebrow">MANPOWER</p>
             <h2>Add worker</h2>
             <p>Create a reusable worker profile for attendance.</p>
             {error && <p className="form-error">{error}</p>}
@@ -1011,7 +1011,7 @@ export default function HomePage() {
             <button type="button" className="modal-close" onClick={() => setInviteOpen(false)}>
               ×
             </button>
-            <p className="eyebrow">T5 SUBSTRUCTURE</p>
+            <p className="eyebrow">USER ACCESS</p>
             <h2>Create management account</h2>
             <p>Create the user with a company email and a one-time temporary password.</p>
             {inviteError && <p className="form-error">{inviteError}</p>}

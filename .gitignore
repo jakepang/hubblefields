@@ -51,3 +51,4 @@ next-env.d.ts
 
 # local archives / handover dumps (not needed for deploy)
 /archive/
+.env*

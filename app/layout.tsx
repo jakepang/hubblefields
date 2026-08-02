@@ -8,11 +8,11 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "T5 Substructure — CCCC–OBAYASHI JV",
-  description: "Project manpower attendance and access management for T5 Substructure.",
+  title: "QI SHENG CONSTRUCTION — Attendance",
+  description: "Workforce attendance and access management for QI SHENG CONSTRUCTION PTE. LTD.",
   appleWebApp: {
     capable: true,
-    title: "T5 Attendance",
+    title: "Qi Sheng Attendance",
     statusBarStyle: "default",
   },
   formatDetection: {

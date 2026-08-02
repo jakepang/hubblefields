@@ -83,10 +83,10 @@ export const SITE_ADDRESS =
 export const SITE_LABEL =
   process.env.GEOFENCE_LABEL ||
   (geofenceMode() === "singapore"
-    ? "Singapore"
+    ? "QI SHENG CONSTRUCTION PTE. LTD."
     : geofenceMode() === "off"
       ? "Open area"
-      : "T5 Substructure");
+      : "QI SHENG CONSTRUCTION PTE. LTD.");
 
 export function siteRadiusM() {
   const mode = geofenceMode();

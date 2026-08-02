@@ -105,7 +105,7 @@ export function SettingsPanel({
   }
 
   function sendReport() {
-    const subject = encodeURIComponent(`[T5 Attendance] Issue from ${userName}`);
+    const subject = encodeURIComponent(`[Qi Sheng Attendance] Issue from ${userName}`);
     const body = encodeURIComponent(
       [
         `Name: ${userName}`,

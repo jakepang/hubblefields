@@ -1,7 +1,7 @@
 export const APP_VERSION = "0.1.0";
 export const APP_BUILD = "1";
-export const ORG_NAME = "CCCC–OBAYASHI Joint Venture";
-export const PROJECT_NAME = "T5 Substructure";
+export const ORG_NAME = "QI SHENG CONSTRUCTION PTE. LTD.";
+export const PROJECT_NAME = "QI SHENG CONSTRUCTION PTE. LTD.";
 
 export type AppLanguage = "en" | "zh";
 

@@ -25,7 +25,7 @@ const en = {
   manageEmailHint: "Customize notifications",
   locationTracking: "Location Tracking for Projects",
   locationHint:
-    "We'll use your device's location services to track and record the locations of your activities, such as checking in for attendance on T5 Substructure.",
+    "We'll use your device's location services to track and record the locations of your activities, such as checking in for attendance.",
   openDeviceSettings: "Open Device Settings",
   allProjects: "All Projects",
   projects: "Projects",
@@ -36,7 +36,7 @@ const en = {
   englishSub: "English (EN)",
   chinese: "中文",
   chineseSub: "Chinese (Simplified)",
-  helpTitle: "T5 Attendance Help",
+  helpTitle: "Attendance Help",
   helpBody:
     "Use Check In / Check Out with GPS and a site photo. Currently onsite shows who still needs checkout. History supports date browsing. Admins can export CSV reports with shift hours.",
   reportTitle: "Report an issue",
@@ -79,7 +79,7 @@ const zh: Record<keyof typeof en, string> = {
   manageEmailHint: "自定义邮件通知",
   locationTracking: "项目位置追踪",
   locationHint:
-    "我们将使用设备定位服务，记录您在 T5 Substructure 项目中的考勤签到等活动位置。",
+    "我们将使用设备定位服务，记录您的考勤签到等活动位置。",
   openDeviceSettings: "打开系统设置",
   allProjects: "全部项目",
   projects: "项目",
@@ -90,7 +90,7 @@ const zh: Record<keyof typeof en, string> = {
   englishSub: "English (EN)",
   chinese: "中文",
   chineseSub: "简体中文",
-  helpTitle: "T5 考勤帮助",
+  helpTitle: "考勤帮助",
   helpBody:
     "签到/签退需 GPS 与现场照片。在场名单可快速签退。历史支持按日期查看。管理员可导出含工时的 CSV 报表。",
   reportTitle: "反馈问题",
