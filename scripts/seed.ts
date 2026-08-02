@@ -80,57 +80,6 @@ async function main() {
 
   if (!adminId) throw new Error("Missing admin id");
 
-  const companyName = "QI SHENG CONSTRUCTION PTE. LTD.";
-  const companyCode = "QI-SHENG";
-  const [existingCompany] = await db
-    .select()
-    .from(schema.companies)
-    .where(eq(schema.companies.code, companyCode))
-    .limit(1);
-
-  let companyId = existingCompany?.id;
-  if (!existingCompany) {
-    const [company] = await db
-      .insert(schema.companies)
-      .values({
-        name: companyName,
-        code: companyCode,
-        status: "Active",
-        notes: "Field trial customer — multi-site Singapore",
-        createdAt: now,
-      })
-      .returning();
-    companyId = company.id;
-    console.log(`Seeded company ${companyName}`);
-  } else {
-    console.log(`Company already exists: ${companyName}`);
-  }
-
-  if (companyId) {
-    const [existingProject] = await db
-      .select()
-      .from(schema.companyProjects)
-      .where(eq(schema.companyProjects.companyId, companyId))
-      .limit(1);
-    if (!existingProject) {
-      await db.insert(schema.companyProjects).values({
-        companyId,
-        name: "Singapore Operations",
-        code: "SG-OPS",
-        status: "Active",
-        address: "Singapore",
-        notes: "Dispersed sites — company-level attendance",
-        createdAt: now,
-      });
-      console.log("Seeded default project Singapore Operations");
-    }
-
-    await db
-      .update(schema.projectUsers)
-      .set({ companyId, projectCode: companyCode })
-      .where(eq(schema.projectUsers.id, adminId));
-  }
-
   const seedManpower = process.env.SEED_MANPOWER !== "0" && process.env.SEED_MANPOWER !== "false";
   if (!seedManpower) {
     console.log("Skipping manpower seed (SEED_MANPOWER=0). Add workers in the app.");
