@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { t, type MsgKey } from "@/lib/i18n";
 import {
@@ -194,11 +195,11 @@ export function SettingsPanel({
           {isPlatformAdmin && (
             <section className="settings-block">
               <h3>Hubble Fields</h3>
-              <a className="settings-row" href="/console">
+              <Link className="settings-row" href="/console">
                 <span className="settings-ico">▣</span>
                 <span>Platform Console</span>
                 <b>›</b>
-              </a>
+              </Link>
             </section>
           )}
 

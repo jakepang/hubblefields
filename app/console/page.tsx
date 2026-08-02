@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Company = {
@@ -168,7 +169,7 @@ export default function ConsolePage() {
         <section className="console-denied">
           <h1>Platform Console</h1>
           <p>This area is only for Hubble Fields operators.</p>
-          <a href="/">Back to attendance app</a>
+          <Link href="/">Back to attendance app</Link>
         </section>
       </main>
     );
@@ -183,8 +184,8 @@ export default function ConsolePage() {
           <small>Signed in as {userName}</small>
         </div>
         <div className="console-top-actions">
-          <a href="/">Attendance app</a>
-          <a href="/signin">Sign in page</a>
+          <Link href="/">Attendance app</Link>
+          <Link href="/signin">Sign in page</Link>
         </div>
       </header>
 
