@@ -7,38 +7,13 @@ import {
   daysBetween,
   pairShifts,
 } from "@/lib/attendance";
+import { mapAttendanceRecord } from "@/lib/attendance-map";
 import { getSessionUserFromRequest } from "@/lib/auth";
 import { checkLocation, publicGeofence } from "@/lib/geofence";
 import { parseAttendancePhoto, parseAttendancePhotoUrl } from "@/lib/photo";
 import { canBrowseAttendanceHistory, canRecordAttendance, canViewReports } from "@/lib/roles";
 
 export const runtime = "nodejs";
-
-function mapRecord(
-  row: typeof attendanceRecords.$inferSelect,
-  recordedByName: string | null,
-) {
-  return {
-    id: row.id,
-    workerId: row.workerId,
-    workerName: row.workerName,
-    company: row.company,
-    trade: row.trade,
-    action: row.action,
-    remarks: row.remarks,
-    hasPhoto: Boolean(row.photoUrl || row.photoData),
-    photoUrl: row.photoUrl || (row.photoData ? `/api/attendance/${row.id}/photo` : null),
-    latitude: row.latitude,
-    longitude: row.longitude,
-    accuracyM: row.accuracyM,
-    locationVerified: row.locationVerified,
-    locationLabel: row.locationLabel,
-    distanceM: row.distanceM,
-    recordedByUserId: row.recordedByUserId,
-    recordedByName: recordedByName || "Unknown",
-    recordedAt: row.recordedAt,
-  };
-}
 
 export async function GET(request: Request) {
   const user = await getSessionUserFromRequest(request);
@@ -98,7 +73,7 @@ export async function GET(request: Request) {
     records: rows
       .slice()
       .reverse()
-      .map(({ record, recordedByName }) => mapRecord(record, recordedByName)),
+      .map(({ record, recordedByName }) => mapAttendanceRecord(record, recordedByName)),
     stats: {
       checkedIn: rows.filter(({ record }) => record.action === "IN").length,
       checkedOut: rows.filter(({ record }) => record.action === "OUT").length,
@@ -213,12 +188,13 @@ export async function POST(request: Request) {
       distanceM: location.distanceM,
       recordedByUserId: user.id,
       recordedAt: new Date(),
+      source: "field",
     })
     .returning();
 
   return Response.json(
     {
-      record: mapRecord(record, user.name),
+      record: mapAttendanceRecord(record, user.name),
       location,
       clientLocalId: payload.clientLocalId || null,
     },

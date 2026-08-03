@@ -30,6 +30,11 @@ export function canViewReports(role: string) {
   return role === "Project Admin";
 }
 
+/** Project Admin may backfill or correct punch times without GPS/photo. */
+export function canCorrectAttendance(role: string) {
+  return role === "Project Admin";
+}
+
 /** Supervisors and Admins can browse attendance by date (not only today). */
 export function canBrowseAttendanceHistory(role: string) {
   return canRecordAttendance(role) || canViewReports(role) || role === "Viewer";

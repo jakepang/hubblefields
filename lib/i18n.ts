@@ -38,7 +38,7 @@ const en = {
   chineseSub: "Chinese (Simplified)",
   helpTitle: "Attendance Help",
   helpBody:
-    "Use Check In / Check Out with GPS and a site photo. Currently onsite shows who still needs checkout. History supports date browsing. Admins can export CSV reports with shift hours.",
+    "Use Check In / Check Out with GPS and a site photo. Currently onsite shows who still needs checkout. History supports date browsing. Project Admins can add or correct punch times manually when a field punch failed, and export CSV reports with shift hours.",
   reportTitle: "Report an issue",
   reportHint: "Describe what went wrong. This opens your email app to the project admin.",
   reportSend: "Open email",
@@ -52,6 +52,9 @@ const en = {
   checkIn: "Check in",
   back: "Back",
   done: "Done",
+  manualPunch: "Manual punch",
+  editPunch: "Edit",
+  sourceManual: "Manual",
 };
 
 const zh: Record<keyof typeof en, string> = {
@@ -92,7 +95,7 @@ const zh: Record<keyof typeof en, string> = {
   chineseSub: "简体中文",
   helpTitle: "考勤帮助",
   helpBody:
-    "签到/签退需 GPS 与现场照片。在场名单可快速签退。历史支持按日期查看。管理员可导出含工时的 CSV 报表。",
+    "签到/签退需 GPS 与现场照片。在场名单可快速签退。历史支持按日期查看。项目管理员可在打卡失败等情况下手动补录或修改打卡时间，并可导出含工时的 CSV 报表。",
   reportTitle: "反馈问题",
   reportHint: "请描述遇到的问题，将打开邮件发送给项目管理员。",
   reportSend: "打开邮件",
@@ -106,6 +109,9 @@ const zh: Record<keyof typeof en, string> = {
   checkIn: "签到",
   back: "返回",
   done: "完成",
+  manualPunch: "手动补录",
+  editPunch: "修改",
+  sourceManual: "手动",
 };
 
 export type MsgKey = keyof typeof en;

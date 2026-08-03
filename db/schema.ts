@@ -86,4 +86,6 @@ export const attendanceRecords = sqliteTable("attendance_records", {
     .notNull()
     .references(() => projectUsers.id),
   recordedAt: integer("recorded_at", { mode: "timestamp_ms" }).notNull(),
+  /** `field` = GPS/photo punch; `manual` = Project Admin correction/backfill */
+  source: text("source").notNull().default("field"),
 });

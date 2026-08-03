@@ -2,6 +2,10 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { AttendanceModal } from "@/components/AttendanceModal";
+import {
+  ManualAttendanceModal,
+  type ManualAttendanceTarget,
+} from "@/components/ManualAttendanceModal";
 import { OfflineSyncBootstrap } from "@/components/OfflineSyncBootstrap";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { formatHours, localDateString } from "@/lib/attendance";
@@ -46,6 +50,8 @@ type RecordRow = {
   recordedAt: string;
   recordedByUserId: number;
   recordedByName?: string;
+  remarks?: string | null;
+  source?: "field" | "manual" | string;
   hasPhoto?: boolean;
   photoUrl?: string | null;
   latitude?: number | null;
@@ -84,7 +90,15 @@ function generatePassword() {
   return chars.join("");
 }
 
-function RecordList({ records }: { records: RecordRow[] }) {
+function RecordList({
+  records,
+  canEdit = false,
+  onEdit,
+}: {
+  records: RecordRow[];
+  canEdit?: boolean;
+  onEdit?: (record: RecordRow) => void;
+}) {
   if (!records.length) {
     return (
       <div className="empty-state">
@@ -99,7 +113,10 @@ function RecordList({ records }: { records: RecordRow[] }) {
         <div className="attendance-row" key={record.id}>
           <span className={`movement ${record.action.toLowerCase()}`}>{record.action === "IN" ? "↘" : "↗"}</span>
           <div>
-            <strong>{record.workerName}</strong>
+            <strong>
+              {record.workerName}
+              {record.source === "manual" && <em className="source-badge">Manual</em>}
+            </strong>
             <small>
               {record.workerId} · {record.company} · {record.trade}
             </small>
@@ -107,9 +124,10 @@ function RecordList({ records }: { records: RecordRow[] }) {
               {record.locationVerified === true && "On site"}
               {record.locationVerified === false &&
                 `Off site${record.distanceM != null ? ` · ${Math.round(record.distanceM)}m` : ""}`}
-              {record.locationVerified == null && "No GPS"}
+              {record.locationVerified == null && (record.source === "manual" ? "Manual entry" : "No GPS")}
               {record.hasPhoto ? " · Photo" : " · No photo"}
               {record.recordedByName ? ` · by ${record.recordedByName}` : ""}
+              {record.remarks ? ` · ${record.remarks}` : ""}
               {record.hasPhoto && (
                 <>
                   {" · "}
@@ -124,12 +142,19 @@ function RecordList({ records }: { records: RecordRow[] }) {
               )}
             </small>
           </div>
-          <b className={record.action === "IN" ? "in" : "out"}>
-            {record.action === "IN" ? "CHECKED IN" : "CHECKED OUT"}
-          </b>
-          <time>
-            {new Date(record.recordedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </time>
+          <div className="attendance-row-aside">
+            <b className={record.action === "IN" ? "in" : "out"}>
+              {record.action === "IN" ? "CHECKED IN" : "CHECKED OUT"}
+            </b>
+            <time>
+              {new Date(record.recordedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </time>
+            {canEdit && onEdit && (
+              <button type="button" className="linkish" onClick={() => onEdit(record)}>
+                Edit
+              </button>
+            )}
+          </div>
         </div>
       ))}
     </div>
@@ -188,6 +213,8 @@ export default function HomePage() {
   const [resetError, setResetError] = useState("");
   const [saving, setSaving] = useState(false);
   const [addingWorker, setAddingWorker] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualEditing, setManualEditing] = useState<ManualAttendanceTarget | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
@@ -357,6 +384,57 @@ export default function HomePage() {
     setAddingWorker(false);
     setSaving(false);
     await load();
+  }
+
+  async function saveManualAttendance(payload: {
+    workerId: string;
+    action: "IN" | "OUT";
+    recordedAt: string;
+    remarks: string;
+  }) {
+    setSaving(true);
+    setError("");
+    const editingId = manualEditing?.id;
+    const response = await fetch(
+      editingId ? `/api/attendance/${editingId}` : "/api/attendance/manual",
+      {
+        method: editingId ? "PATCH" : "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setError(data.error || "Unable to save manual punch");
+      setSaving(false);
+      return;
+    }
+    setManualOpen(false);
+    setManualEditing(null);
+    setSaving(false);
+    await load();
+    if (view === "history") await loadHistory(historyDate);
+    if (view === "reports") await loadReport();
+  }
+
+  function openManualCreate() {
+    setManualEditing(null);
+    setError("");
+    setManualOpen(true);
+  }
+
+  function openManualEdit(record: RecordRow) {
+    setManualEditing({
+      id: record.id,
+      workerId: record.workerId,
+      workerName: record.workerName,
+      action: record.action,
+      recordedAt: record.recordedAt,
+      remarks: record.remarks || "",
+    });
+    setError("");
+    setManualOpen(true);
   }
 
   async function toggleWorker(worker: Worker) {
@@ -652,14 +730,21 @@ export default function HomePage() {
                 <div>
                   <h1>{t(lang, "history")}</h1>
                 </div>
-                <label className="history-date">
-                  <input
-                    type="date"
-                    value={historyDate}
-                    max={today}
-                    onChange={(event) => setHistoryDate(event.target.value || today)}
-                  />
-                </label>
+                <div className="history-toolbar">
+                  {isAdmin && (
+                    <button className="primary-button" type="button" onClick={openManualCreate}>
+                      + {t(lang, "manualPunch")}
+                    </button>
+                  )}
+                  <label className="history-date">
+                    <input
+                      type="date"
+                      value={historyDate}
+                      max={today}
+                      onChange={(event) => setHistoryDate(event.target.value || today)}
+                    />
+                  </label>
+                </div>
               </div>
               <section className="attendance-summary">
                 <div>
@@ -676,7 +761,11 @@ export default function HomePage() {
                 </div>
               </section>
               <section className="panel">
-                <RecordList records={historyRecords} />
+                <RecordList
+                  records={historyRecords}
+                  canEdit={isAdmin}
+                  onEdit={isAdmin ? openManualEdit : undefined}
+                />
               </section>
             </>
           )}
@@ -845,7 +934,11 @@ export default function HomePage() {
                 <div className="panel-title">
                   <h2>Movements</h2>
                 </div>
-                <RecordList records={reportRecords} />
+                <RecordList
+                  records={reportRecords}
+                  canEdit={isAdmin}
+                  onEdit={isAdmin ? openManualEdit : undefined}
+                />
               </section>
             </>
           )}
@@ -1004,6 +1097,24 @@ export default function HomePage() {
             </button>
           </form>
         </div>
+      )}
+
+      {isAdmin && manualOpen && (
+        <ManualAttendanceModal
+          key={manualEditing ? `edit-${manualEditing.id}` : "create"}
+          mode={manualEditing ? "edit" : "create"}
+          workers={workers}
+          defaultDate={view === "history" ? historyDate : today}
+          editing={manualEditing}
+          saving={saving}
+          error={error}
+          onClose={() => {
+            setManualOpen(false);
+            setManualEditing(null);
+            setError("");
+          }}
+          onSubmit={saveManualAttendance}
+        />
       )}
 
       {inviteOpen && (
