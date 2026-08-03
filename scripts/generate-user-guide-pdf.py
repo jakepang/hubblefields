@@ -40,12 +40,13 @@ pdfmetrics.registerFont(TTFont("WQY", WQY))
 pdfmetrics.registerFont(TTFont("LibSans", LIB_SANS))
 pdfmetrics.registerFont(TTFont("LibSansBold", LIB_SANS_BOLD))
 
-NAVY = HexColor("#0B1F33")
-TEAL = HexColor("#1F6F6A")
-ACCENT = HexColor("#C45C26")
-LIGHT = HexColor("#F3F6F8")
-MUTED = HexColor("#4A5A66")
-LINE = HexColor("#D5DEE5")
+INK = HexColor("#1A2B34")
+TEAL = HexColor("#2A9D8F")
+SOFT_TEAL = HexColor("#E6F5F2")
+SKY = HexColor("#EAF4F8")
+LIGHT = HexColor("#F7FBFC")
+MUTED = HexColor("#5B6B73")
+LINE = HexColor("#D7E4EA")
 
 PAGE_W, PAGE_H = A4
 MARGIN = 18 * mm
@@ -55,7 +56,7 @@ styles = {
         "h1",
         fontName="WQY",
         fontSize=15,
-        textColor=NAVY,
+        textColor=INK,
         spaceBefore=14,
         spaceAfter=8,
         leading=20,
@@ -73,7 +74,7 @@ styles = {
         "bilingual",
         fontName="WQY",
         fontSize=9.5,
-        textColor=NAVY,
+        textColor=INK,
         leading=14.5,
         spaceAfter=7,
         alignment=TA_JUSTIFY,
@@ -91,7 +92,7 @@ styles = {
         "step",
         fontName="WQY",
         fontSize=9.5,
-        textColor=NAVY,
+        textColor=INK,
         leading=14,
         spaceAfter=3,
         leftIndent=8,
@@ -100,7 +101,7 @@ styles = {
         "toc",
         fontName="WQY",
         fontSize=10,
-        textColor=NAVY,
+        textColor=INK,
         leading=16,
         spaceAfter=3,
     ),
@@ -115,7 +116,7 @@ styles = {
         "td",
         fontName="WQY",
         fontSize=8.2,
-        textColor=NAVY,
+        textColor=INK,
         leading=11,
     ),
 }
@@ -172,39 +173,46 @@ def footer(canvas, doc):
     canvas.line(MARGIN, 14 * mm, PAGE_W - MARGIN, 14 * mm)
     canvas.setFont("WQY", 8)
     canvas.setFillColor(MUTED)
-    canvas.drawString(MARGIN, 9 * mm, "Hubble Fields · QI SHENG CONSTRUCTION")
+    canvas.drawString(MARGIN, 9 * mm, "Hubble Fields")
     canvas.drawRightString(PAGE_W - MARGIN, 9 * mm, f"{doc.page}")
     canvas.restoreState()
 
 
 def cover_page(canvas, _doc):
     canvas.saveState()
-    canvas.setFillColor(NAVY)
+    # Soft full-page sky wash
+    canvas.setFillColor(SKY)
     canvas.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
-    canvas.setFillColor(TEAL)
-    canvas.rect(0, PAGE_H * 0.42, PAGE_W, 3, fill=1, stroke=0)
-    canvas.setFillColor(ACCENT)
-    canvas.rect(0, PAGE_H * 0.42 - 6, PAGE_W, 2, fill=1, stroke=0)
 
-    canvas.setFillColor(white)
-    canvas.setFont("WQY", 11)
+    # Light mint band near the top for atmosphere
+    canvas.setFillColor(SOFT_TEAL)
+    canvas.rect(0, PAGE_H * 0.58, PAGE_W, PAGE_H * 0.42, fill=1, stroke=0)
+
+    # Thin accent line
+    canvas.setFillColor(TEAL)
+    canvas.rect(PAGE_W * 0.28, PAGE_H * 0.46, PAGE_W * 0.44, 2.2, fill=1, stroke=0)
+
+    # Brand + titles
+    canvas.setFillColor(TEAL)
+    canvas.setFont("WQY", 12)
     canvas.drawCentredString(PAGE_W / 2, PAGE_H * 0.62, "HUBBLE FIELDS")
+
+    canvas.setFillColor(INK)
     canvas.setFont("WQY", 22)
     canvas.drawCentredString(
-        PAGE_W / 2, PAGE_H * 0.55, "工地考勤系统功能介绍与使用指南"
+        PAGE_W / 2, PAGE_H * 0.54, "工地考勤系统功能介绍与使用指南"
     )
     canvas.setFont("WQY", 13)
-    canvas.drawCentredString(PAGE_W / 2, PAGE_H * 0.50, "Feature Overview & User Guide")
+    canvas.setFillColor(MUTED)
+    canvas.drawCentredString(PAGE_W / 2, PAGE_H * 0.49, "Feature Overview & User Guide")
+
     canvas.setFont("WQY", 10)
-    canvas.setFillColor(HexColor("#A8C0CF"))
+    canvas.setFillColor(MUTED)
     canvas.drawCentredString(
-        PAGE_W / 2, PAGE_H * 0.35, "QI SHENG CONSTRUCTION PTE. LTD."
+        PAGE_W / 2, PAGE_H * 0.36, "中英双语 · Bilingual (中文 / English)"
     )
     canvas.drawCentredString(
-        PAGE_W / 2, PAGE_H * 0.32, "中英双语 · Bilingual (中文 / English)"
-    )
-    canvas.drawCentredString(
-        PAGE_W / 2, PAGE_H * 0.28, "Version 0.1 · Field Attendance App"
+        PAGE_W / 2, PAGE_H * 0.32, "Version 0.1 · Field Attendance App"
     )
     canvas.restoreState()
 
@@ -243,8 +251,8 @@ def build_story():
     )
     story.append(
         body_bi(
-            "现场品牌展示为 QI SHENG CONSTRUCTION PTE. LTD.；平台运营侧使用 Hubble Fields Platform Console 管理客户公司、项目与项目管理员账号。",
-            "The on-site brand shown in the app is QI SHENG CONSTRUCTION PTE. LTD. Platform operators use the Hubble Fields Platform Console to manage customer companies, projects, and Project Admin accounts.",
+            "平台运营侧可使用 Hubble Fields Platform Console 管理客户公司、项目与项目管理员账号。",
+            "Platform operators can use the Hubble Fields Platform Console to manage customer companies, projects, and Project Admin accounts.",
         )
     )
     story.append(h2("核心能力", "Key capabilities"))
@@ -674,7 +682,7 @@ def main() -> None:
         bottomMargin=18 * mm,
         title="Hubble Fields — Feature Overview & User Guide (Bilingual)",
         author="Hubble Fields",
-        subject="QI SHENG CONSTRUCTION attendance app user guide",
+        subject="Hubble Fields attendance app user guide",
     )
     doc.build(build_story(), onFirstPage=cover_page, onLaterPages=footer)
     print(f"Wrote {OUT} ({OUT.stat().st_size} bytes)")
