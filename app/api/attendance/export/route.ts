@@ -64,6 +64,7 @@ export async function GET(request: Request) {
       "Geofence OK",
       "Location label",
       "Has photo",
+      "Source",
       "Shift hours",
     ],
     ...rows.map(({ record, recordedByName }) => {
@@ -89,7 +90,8 @@ export async function GET(request: Request) {
         record.distanceM != null ? String(Math.round(record.distanceM)) : "",
         record.locationVerified == null ? "" : record.locationVerified ? "Yes" : "No",
         record.locationLabel || "",
-        record.photoData ? "Yes" : "No",
+        record.photoUrl || record.photoData ? "Yes" : "No",
+        record.source === "manual" ? "Manual" : "Field",
         hours != null ? String(hours) : "",
       ];
     }),

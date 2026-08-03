@@ -158,11 +158,73 @@ async function main() {
     csv.status === 200 && csv.text.includes("Check In") && csv.text.includes("Shifts"),
     `CSV export failed status=${csv.status} body=${String(csv.text).slice(0, 200)}`,
   );
+  assert(csv.text.includes("Source"), "CSV export should include Source column");
+
+  // Clear 059B for manual OUT then re-IN via manual API using a different worker if needed.
+  // Use worker 0184 if present in seed; otherwise create via workers API is heavy — reuse 059B after OUT.
+  const fieldOut = await req("/api/attendance", {
+    method: "POST",
+    cookie: admin.cookie,
+    body: { workerId: "059B", action: "OUT", remarks: "smoke out before manual", ...evidence },
+  });
+  assert(fieldOut.status === 201 || fieldOut.status === 409, `Field OUT setup failed: ${JSON.stringify(fieldOut.json)}`);
+
+  const manualDenied = await req("/api/attendance/manual", {
+    method: "POST",
+    cookie: admin.cookie,
+    body: {
+      workerId: "059B",
+      action: "IN",
+      recordedAt: new Date().toISOString(),
+      remarks: "",
+    },
+  });
+  assert(manualDenied.status === 400, "Manual punch without reason should be rejected");
+
+  const manualInAt = new Date();
+  manualInAt.setMinutes(manualInAt.getMinutes() - 30);
+  const manualIn = await req("/api/attendance/manual", {
+    method: "POST",
+    cookie: admin.cookie,
+    body: {
+      workerId: "059B",
+      action: "IN",
+      recordedAt: manualInAt.toISOString(),
+      remarks: "Smoke manual backfill — GPS failed",
+    },
+  });
+  assert(manualIn.status === 201, `Manual check-in failed: ${JSON.stringify(manualIn.json)}`);
+  assert(manualIn.json.record?.source === "manual", "Manual punch should mark source=manual");
+  const manualId = manualIn.json.record?.id;
+  assert(manualId, "Manual punch should return id");
+
+  const editedAt = new Date(manualInAt.getTime() + 5 * 60 * 1000);
+  const manualEdit = await req(`/api/attendance/${manualId}`, {
+    method: "PATCH",
+    cookie: admin.cookie,
+    body: {
+      recordedAt: editedAt.toISOString(),
+      remarks: "Smoke corrected punch time",
+    },
+  });
+  assert(manualEdit.status === 200, `Manual edit failed: ${JSON.stringify(manualEdit.json)}`);
 
   const supervisor = await loginAs(supervisorEmail, tempPassword, "SuperLive99!");
 
   const forbidden = await req("/api/project-users", { cookie: supervisor.cookie });
   assert(forbidden.status === 403, "Supervisor should not access project-users");
+
+  const manualForbidden = await req("/api/attendance/manual", {
+    method: "POST",
+    cookie: supervisor.cookie,
+    body: {
+      workerId: "059B",
+      action: "OUT",
+      recordedAt: new Date().toISOString(),
+      remarks: "supervisor should not",
+    },
+  });
+  assert(manualForbidden.status === 403, "Supervisor should not create manual punches");
 
   const supervisorHistory = await req(`/api/attendance?from=${yesterday}&to=${today}`, {
     cookie: supervisor.cookie,

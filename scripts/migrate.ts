@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   await ensureColumn(client, "attendance_records", "location_verified", "INTEGER");
   await ensureColumn(client, "attendance_records", "location_label", "TEXT");
   await ensureColumn(client, "attendance_records", "distance_m", "REAL");
+  await ensureColumn(client, "attendance_records", "source", "TEXT NOT NULL DEFAULT 'field'");
   await ensureColumn(client, "project_users", "platform_admin", "INTEGER NOT NULL DEFAULT 0");
   await ensureColumn(client, "project_users", "company_id", "INTEGER");
 
