@@ -3,7 +3,8 @@
 ## Hubble Fields User Guide (Bilingual PDF)
 
 - File: [`Hubble-Fields-User-Guide-Bilingual.pdf`](./Hubble-Fields-User-Guide-Bilingual.pdf)
-- Contents: feature overview and usage instructions in Chinese and English
+- Contents: feature overview and usage instructions (**English first, Chinese underneath**)
+- Includes Project Admin manual punch create/edit
 
 ### Regenerate
 
